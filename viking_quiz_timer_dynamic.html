@@ -1,0 +1,814 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0806;--bg2:#110e0a;--bg3:#1a1410;--bg4:#221c15;--bg5:#2a2018;
+  --gold:#c9922a;--gold2:#e8b84b;--gold3:#f5d87a;
+  --red:#8b1a1a;--red2:#b22222;
+  --green:#1a4a1a;--green2:#2a7a2a;--green3:#4aff4a;
+  --text:#e8d8b8;--text2:#a89068;--text3:#6e5c40;--text4:#3a2e1e;
+  --border:rgba(201,146,42,0.3);--border2:rgba(201,146,42,0.6);
+  --danger:#ff4444;--danger2:rgba(255,68,68,0.2);
+  --combo1:#c9922a;--combo2:#ff8c00;--combo3:#ff4500;--combo4:#ff0000;
+}
+html,body{width:100%;background:var(--bg);color:var(--text);font-family:'Crimson Text',serif;overflow-x:hidden}
+
+/* ===== RUNE BG ===== */
+.rune-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.rune-char{position:absolute;font-family:'Cinzel',serif;color:rgba(201,146,42,0.04);font-size:2rem;font-weight:900;animation:rfloat 20s infinite linear;user-select:none}
+@keyframes rfloat{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}
+
+/* ===== LAYOUT ===== */
+.page{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 1.25rem 4rem}
+
+/* ===== HEADER ===== */
+.site-header{text-align:center;padding:2rem 0 1rem}
+.header-runes{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.5em;color:var(--gold);opacity:.4;margin-bottom:.4rem}
+.site-title{font-family:'Cinzel',serif;font-size:clamp(2rem,6vw,4.5rem);font-weight:900;letter-spacing:.08em;line-height:1;background:linear-gradient(180deg,var(--gold3) 0%,var(--gold) 50%,var(--gold2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.site-sub{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.5em;color:var(--text3);margin-top:.25rem}
+
+/* ===== PANELS ===== */
+.panel{background:var(--bg2);border:1px solid var(--border);padding:1.75rem;margin-bottom:1.5rem;position:relative;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px))}
+.panel::before{content:'';position:absolute;inset:3px;border:1px solid rgba(201,146,42,.08);clip-path:polygon(0 0,calc(100% - 17px) 0,100% 17px,100% 100%,17px 100%,0 calc(100% - 17px));pointer-events:none}
+.panel-eyebrow{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.5em;color:var(--gold);opacity:.7;margin-bottom:.6rem;display:flex;align-items:center;gap:.75rem}
+.panel-eyebrow::after{content:'';flex:1;height:1px;background:var(--border)}
+.panel-h{font-family:'Cinzel',serif;font-size:1.35rem;font-weight:700;color:var(--text);margin-bottom:.6rem}
+.panel-p{color:var(--text2);font-size:1rem;line-height:1.7;margin-bottom:1rem}
+.panel-p strong{color:var(--gold2);font-weight:600}
+
+/* ===== CTA ===== */
+.cta-btn{display:inline-block;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.3em;font-weight:700;color:var(--bg);background:linear-gradient(135deg,var(--gold2) 0%,var(--gold) 100%);padding:.85rem 2.25rem;cursor:pointer;border:none;clip-path:polygon(12px 0%,calc(100% - 12px) 0%,100% 50%,calc(100% - 12px) 100%,12px 100%,0% 50%);transition:all .2s;animation:pglow 3s infinite}
+@keyframes pglow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.15)}}
+.cta-btn:hover{transform:scale(1.04)}
+
+/* ===== QUIZ CARD GRID ===== */
+.quiz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.85rem}
+.quiz-card{background:var(--bg3);border:1px solid var(--border);padding:1.25rem;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.quiz-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .2s}
+.quiz-card.available:hover{background:var(--bg4);border-color:var(--gold2);transform:translateY(-2px)}
+.quiz-card.available:hover::before{opacity:1}
+.quiz-card.locked{opacity:.45;cursor:not-allowed}
+.q-badge{display:inline-block;font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.3em;padding:.18rem .55rem;margin-bottom:.6rem;border:1px solid}
+.badge-ok{color:var(--gold2);border-color:var(--gold);background:rgba(201,146,42,.1)}
+.badge-soon{color:var(--text3);border-color:var(--text4);background:transparent}
+.q-icon{font-size:1.6rem;margin-bottom:.4rem;display:block}
+.q-name{font-family:'Cinzel',serif;font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:.3rem}
+.q-desc{font-size:.82rem;color:var(--text3);line-height:1.5}
+
+/* ===== LOGIN ===== */
+.login-btn{display:inline-flex;align-items:center;gap:.75rem;font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.2em;font-weight:700;color:var(--text);background:var(--bg3);border:1px solid var(--border2);padding:.85rem 1.75rem;cursor:pointer;transition:all .2s;clip-path:polygon(8px 0%,calc(100% - 8px) 0%,100% 50%,calc(100% - 8px) 100%,8px 100%,0% 50%)}
+.login-btn:hover{background:var(--bg4);border-color:var(--gold2);color:var(--gold2)}
+.connected-bar{display:none;align-items:center;justify-content:space-between;background:rgba(201,146,42,.07);border:1px solid var(--border);padding:.55rem 1rem;margin-top:.85rem;font-size:.85rem;color:var(--text2)}
+.connected-bar.show{display:flex}
+.c-name{font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold2)}
+.disc-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;line-height:1;transition:color .2s}
+.disc-btn:hover{color:var(--red2)}
+.login-note{font-size:.82rem;color:var(--text3);margin-top:.6rem;font-style:italic}
+
+/* ===== QUIZ WRAPPER ===== */
+.quiz-wrap{background:var(--bg2);border:1px solid var(--border);overflow:hidden;clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,24px 100%,0 calc(100% - 24px))}
+
+/* ===== QUIZ TOP BAR ===== */
+.quiz-topbar{background:var(--bg3);border-bottom:1px solid var(--border);padding:.85rem 1.25rem;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:1rem}
+.q-prog-label{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.25em;color:var(--gold);white-space:nowrap}
+.q-score-label{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.25em;color:var(--text2);white-space:nowrap;text-align:right}
+
+/* ===== COMBO DISPLAY ===== */
+.combo-display{display:flex;align-items:center;gap:.4rem;justify-content:flex-end}
+.combo-flame{font-size:.9rem;transition:all .3s}
+.combo-label{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.15em;transition:color .3s}
+.combo-x1{color:var(--text3)}
+.combo-x2{color:var(--combo1)}
+.combo-x3{color:var(--combo2)}
+.combo-x4{color:var(--combo3)}
+.combo-x5{color:var(--combo4);animation:comboshake .3s infinite alternate}
+@keyframes comboshake{from{transform:scale(1)}to{transform:scale(1.1)}}
+
+/* ===== PROGRESS BAR ===== */
+.prog-bar-wrap{width:100%;height:4px;background:var(--bg4)}
+.prog-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .5s ease}
+
+/* ===== TIMER AREA ===== */
+.timer-section{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.25rem .5rem;background:var(--bg3);border-bottom:1px solid rgba(201,146,42,.1)}
+.timer-visual{position:relative;width:52px;height:52px;flex-shrink:0}
+.timer-svg{width:52px;height:52px;transform:rotate(-90deg)}
+.timer-track{fill:none;stroke:var(--bg4);stroke-width:4}
+.timer-arc{fill:none;stroke:var(--gold);stroke-width:4;stroke-linecap:round;stroke-dasharray:138.23;stroke-dashoffset:0;transition:stroke-dashoffset .1s linear,stroke .5s}
+.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--gold);transition:color .5s}
+.timer-danger .timer-arc{stroke:var(--danger);animation:timerPulse .5s infinite alternate}
+.timer-danger .timer-num{color:var(--danger)}
+@keyframes timerPulse{from{opacity:1}to{opacity:.5}}
+
+.points-preview{text-align:right}
+.points-preview-label{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.3em;color:var(--text3);margin-bottom:.15rem}
+.points-preview-val{font-family:'Cinzel',serif;font-size:1.4rem;font-weight:900;color:var(--gold2);transition:color .3s,transform .3s;display:inline-block}
+.points-preview-val.decaying{animation:decay .1s ease}
+@keyframes decay{0%{transform:scale(1.1)}100%{transform:scale(1)}}
+.points-bonus-tag{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.2em;color:var(--text3);margin-top:.1rem}
+
+/* ===== QUESTION BODY ===== */
+.q-body{padding:1.5rem 1.25rem 1rem}
+.q-cat{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.45em;color:var(--gold);opacity:.65;margin-bottom:.6rem;text-transform:uppercase}
+.q-text{font-family:'Cinzel',serif;font-size:1.05rem;font-weight:700;color:var(--text);line-height:1.55;margin-bottom:1.4rem}
+
+/* ===== ANSWERS ===== */
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:1rem}
+@media(max-width:480px){.ans-grid{grid-template-columns:1fr}}
+.ans-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:.8rem .95rem;text-align:left;cursor:pointer;font-family:'Crimson Text',serif;font-size:.97rem;line-height:1.4;transition:all .15s;display:flex;align-items:flex-start;gap:.65rem;position:relative;overflow:hidden}
+.ans-btn::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);opacity:0;transition:opacity .15s}
+.ans-btn:hover:not(:disabled){background:var(--bg4);border-color:var(--gold);color:var(--gold3)}
+.ans-btn:hover:not(:disabled)::before{opacity:1}
+.ans-btn.correct{background:rgba(30,80,30,.45);border-color:#3a9a3a;color:#6aff6a}
+.ans-btn.incorrect{background:rgba(100,20,20,.4);border-color:var(--red2);color:#ff6a6a}
+.ans-btn.revealed{background:rgba(20,60,20,.3);border-color:#2a7a2a;color:#5acc5a}
+.ans-letter{font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;color:var(--gold);opacity:.55;min-width:14px;margin-top:2px;flex-shrink:0}
+
+/* ===== POINTS POPUP ===== */
+.pts-popup{position:fixed;pointer-events:none;z-index:9999;font-family:'Cinzel',serif;font-size:1.6rem;font-weight:900;color:var(--gold3);text-shadow:0 0 10px rgba(201,146,42,.6);animation:ptsFloat 1.2s ease forwards;opacity:0}
+@keyframes ptsFloat{0%{opacity:0;transform:translateY(0) scale(.8)}15%{opacity:1;transform:translateY(-8px) scale(1.15)}80%{opacity:1;transform:translateY(-40px) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(.9)}}
+.pts-popup.negative{color:#ff6a6a;text-shadow:0 0 10px rgba(255,68,68,.5)}
+
+/* ===== STREAK BAR ===== */
+.streak-row{display:flex;align-items:center;gap:.5rem;padding:.4rem 1.25rem .6rem;background:var(--bg3);border-bottom:1px solid rgba(201,146,42,.08)}
+.streak-label{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.3em;color:var(--text3);min-width:60px}
+.streak-dots{display:flex;gap:4px}
+.streak-dot{width:16px;height:6px;background:var(--bg4);border:1px solid var(--text4);transition:all .3s}
+.streak-dot.active{background:var(--gold);border-color:var(--gold2)}
+.streak-dot.fire{background:linear-gradient(90deg,var(--combo2),var(--combo3));border-color:var(--combo2);animation:dotfire .4s infinite alternate}
+@keyframes dotfire{from{opacity:.8}to{opacity:1}}
+.streak-multiplier{font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;margin-left:.4rem;transition:color .3s}
+
+/* ===== FEEDBACK ===== */
+.feedback-box{background:var(--bg3);border:1px solid var(--border2);padding:.85rem 1.1rem;margin-top:.5rem;display:none;clip-path:polygon(6px 0%,calc(100% - 6px) 0%,100% 50%,calc(100% - 6px) 100%,6px 100%,0% 50%)}
+.feedback-box.show{display:block}
+.fb-verdict{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.25em;font-weight:700;margin-bottom:.35rem}
+.fb-verdict.good{color:#6aff6a}
+.fb-verdict.bad{color:#ff6a6a}
+.fb-text{color:var(--text2);font-size:.93rem;line-height:1.6;font-style:italic}
+.fb-pts{font-family:'Cinzel',serif;font-size:.8rem;font-weight:700;margin-top:.4rem}
+.fb-pts.earned{color:var(--gold2)}
+.fb-pts.lost{color:#ff6a6a}
+
+/* ===== NEXT BTN ===== */
+.next-btn{display:block;width:100%;font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.3em;font-weight:700;color:var(--bg);background:linear-gradient(135deg,var(--gold2) 0%,var(--gold) 100%);border:none;padding:.95rem;cursor:pointer;transition:all .2s;opacity:0;pointer-events:none;margin-top:.75rem}
+.next-btn.visible{opacity:1;pointer-events:all}
+.next-btn:hover{background:linear-gradient(135deg,var(--gold3) 0%,var(--gold2) 100%)}
+
+/* ===== RESULTS ===== */
+.results-center{text-align:center;padding:2.5rem 1.5rem}
+.res-title{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--gold);margin-bottom:.35rem}
+.res-sub{color:var(--text2);font-size:1rem;font-style:italic;margin-bottom:1.75rem}
+.res-score-big{font-family:'Cinzel',serif;font-size:4.5rem;font-weight:900;background:linear-gradient(180deg,var(--gold3) 0%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:.2rem;animation:scoreCount 1s ease}
+@keyframes scoreCount{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.res-score-lbl{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.5em;color:var(--text3);margin-bottom:1.5rem}
+.res-rank{display:inline-block;border:1px solid var(--border2);padding:.65rem 1.75rem;font-family:'Cinzel',serif;font-size:.82rem;letter-spacing:.2em;color:var(--gold2);margin-bottom:1.5rem}
+.res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.5rem}
+.stat-card{background:var(--bg3);border:1px solid var(--border);padding:.75rem;text-align:center}
+.stat-val{font-family:'Cinzel',serif;font-size:1.5rem;font-weight:700;color:var(--gold2)}
+.stat-lbl{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.3em;color:var(--text3);margin-top:.2rem}
+
+/* ===== LEADERBOARD ===== */
+.lb-table{width:100%;border-collapse:collapse;font-size:.93rem}
+.lb-table thead tr{border-bottom:1px solid var(--border2)}
+.lb-table th{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.4em;color:var(--gold);padding:.65rem .9rem;text-align:left;opacity:.7}
+.lb-table td{padding:.65rem .9rem;color:var(--text2);border-bottom:1px solid rgba(201,146,42,.07)}
+.lb-table tr.me td{color:var(--gold2);background:rgba(201,146,42,.06)}
+.lb-table td:first-child{font-family:'Cinzel',serif;font-weight:700;color:var(--text3)}
+.lb-table tr:first-child td:first-child{color:var(--gold)}
+.rank-chip{display:inline-block;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.12em;padding:.12rem .45rem;border:1px solid var(--gold);color:var(--gold2);background:rgba(201,146,42,.1)}
+
+/* ===== NAV BTNS ===== */
+.nav-row{display:flex;justify-content:center;gap:.75rem;flex-wrap:wrap;margin-top:1.25rem}
+.nav-btn{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.25em;color:var(--text3);background:none;border:1px solid var(--text4);padding:.55rem 1.1rem;cursor:pointer;transition:all .2s}
+.nav-btn:hover{color:var(--gold);border-color:var(--gold);background:rgba(201,146,42,.05)}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:1.75rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:1px solid var(--gold2);color:var(--text);font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.2em;padding:.65rem 1.4rem;z-index:9998;transition:transform .3s;clip-path:polygon(10px 0%,calc(100% - 10px) 0%,100% 50%,calc(100% - 10px) 100%,10px 100%,0% 50%);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ===== SECTIONS ===== */
+.sec{display:none}.sec.active{display:block}
+
+/* ===== ANIM ===== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.anim-in{animation:fadeUp .35s ease forwards}
+
+/* ===== RANK GUIDE ===== */
+.rank-toggle{display:inline-flex;align-items:center;gap:.5rem;font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;color:var(--text3);cursor:pointer;background:none;border:none;transition:color .2s;padding:.2rem 0}
+.rank-toggle:hover{color:var(--gold2)}
+.rank-guide{display:none;background:var(--bg3);border:1px solid var(--border);padding:1.25rem;margin-top:.75rem}
+.rank-guide.open{display:block}
+.rank-row{display:flex;align-items:center;gap:.9rem;padding:.45rem 0;border-bottom:1px solid rgba(201,146,42,.07)}
+.rank-row:last-child{border:none}
+.r-icon{font-size:1.1rem;min-width:26px;text-align:center}
+.r-name{font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold2);font-weight:700}
+.r-req{font-size:.8rem;color:var(--text3);font-style:italic}
+
+/* ===== TIMEOUT OVERLAY ===== */
+.timeout-overlay{display:none;position:absolute;inset:0;background:rgba(10,8,6,.92);z-index:10;align-items:center;justify-content:center;flex-direction:column;gap:.75rem}
+.timeout-overlay.show{display:flex}
+.timeout-title{font-family:'Cinzel',serif;font-size:1.5rem;font-weight:900;color:var(--red2)}
+.timeout-sub{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.3em;color:var(--text3)}
+
+/* mobile */
+@media(max-width:520px){
+  .quiz-topbar{grid-template-columns:auto 1fr auto;gap:.5rem}
+  .combo-display .combo-label{display:none}
+  .res-stats{grid-template-columns:1fr 1fr}
+  .quiz-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+
+<div class="rune-bg" id="runeBg"></div>
+<div class="toast" id="toast"></div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-runes">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ ᛁ ᛃ ᛇ ᛈ ᛉ ᛊ</div>
+    <h1 class="site-title">MJÖLNIR QUIZ</h1>
+    <p class="site-sub">Le Valhalla t'attend, Guerrier</p>
+  </header>
+
+  <!-- ======== HOME ======== -->
+  <div class="sec active" id="sec-home">
+
+    <div class="panel" style="text-align:center;padding:2rem">
+      <p class="panel-eyebrow">ᚨ ᛚ ᛏ ᛁ ᛗ ᚨ ᛏ ᚢ ᛗ</p>
+      <h2 class="panel-h" style="font-size:1.6rem">Prouve ta valeur aux dieux<br>et rejoins les Einherjar</h2>
+      <div style="margin:1.25rem 0"><button class="cta-btn" onclick="showSec('sec-login')">COMMENCER L'ÉPREUVE</button></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-eyebrow">IDENTIFICATION DU GUERRIER</div>
+      <h3 class="panel-h">Entre dans le Valhalla</h3>
+      <p class="panel-p">Ce quiz mettra à l'épreuve ta connaissance de la mythologie nordique. Ton score sera inscrit dans les <strong>Tables Runiques</strong>, visible par tous les clans.</p>
+      <button class="login-btn" onclick="fakeLogin()">ᚠ&nbsp; SE CONNECTER AVEC LES RUNES</button>
+      <div class="connected-bar" id="connBar">
+        <span>Connecté : <span class="c-name" id="cName">—</span></span>
+        <button class="disc-btn" onclick="disconnect()" title="Déconnexion">✕</button>
+      </div>
+      <p class="login-note">Une connexion runique est requise pour jouer et apparaître au classement</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-eyebrow">SÉLECTION DE L'ÉPREUVE</div>
+      <h3 class="panel-h">Choisissez votre Défi</h3>
+      <p class="panel-p">Que Odin guide ton esprit, que Thor renforce ton bras.</p>
+      <div class="quiz-grid">
+        <div class="quiz-card available" onclick="startQuiz()">
+          <span class="q-badge badge-ok">DISPONIBLE</span>
+          <span class="q-icon">⚔️</span>
+          <div class="q-name">Quiz Général</div>
+          <div class="q-desc">Toute la mythologie nordique — dieux, runes, batailles, créatures</div>
+        </div>
+        <div class="quiz-card locked"><span class="q-badge badge-soon">BIENTÔT 🔒</span><span class="q-icon">🌩️</span><div class="q-name">L'Ère des Ases</div><div class="q-desc">Odin, Thor, Loki, Frigg — le panthéon d'Asgard</div></div>
+        <div class="quiz-card locked"><span class="q-badge badge-soon">BIENTÔT 🔒</span><span class="q-icon">🐍</span><div class="q-name">Ragnarök</div><div class="q-desc">La fin des temps — prophéties, batailles, destinées</div></div>
+        <div class="quiz-card locked"><span class="q-badge badge-soon">BIENTÔT 🔒</span><span class="q-icon">🛡️</span><div class="q-name">Les Sagas</div><div class="q-desc">Edda de Snorri, sagas islandaises, poèmes scaldiques</div></div>
+        <div class="quiz-card locked"><span class="q-badge badge-soon">BIENTÔT 🔒</span><span class="q-icon">⚡</span><div class="q-name">Les Neuf Royaumes</div><div class="q-desc">Asgard, Midgard, Jotunheim — les mondes de Yggdrasil</div></div>
+        <div class="quiz-card locked"><span class="q-badge badge-soon">BIENTÔT 🔒</span><span class="q-icon">🪄</span><div class="q-name">Magie & Runes</div><div class="q-desc">Le Seiðr, le Galdr, les 24 runes du Futhark</div></div>
+        <div class="quiz-card locked"><span class="q-badge badge-soon">BIENTÔT 🔒</span><span class="q-icon">🚢</span><div class="q-name">L'Ère des Vikings</div><div class="q-desc">Raids, exploration, art, traditions historiques</div></div>
+        <div class="quiz-card locked"><span class="q-badge badge-soon">BIENTÔT 🔒</span><span class="q-icon">💀</span><div class="q-name">Mode Skaald</div><div class="q-desc">Pour les véritables skalds. Aucune aide, questions rares</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== QUIZ ======== -->
+  <div class="sec" id="sec-quiz">
+    <div class="quiz-wrap" style="position:relative">
+
+      <!-- timeout overlay -->
+      <div class="timeout-overlay" id="timeoutOverlay">
+        <div class="timeout-title">⌛ TEMPS ÉCOULÉ</div>
+        <div class="timeout-sub">Les dieux n'attendront pas</div>
+      </div>
+
+      <!-- top bar -->
+      <div class="quiz-topbar">
+        <span class="q-prog-label" id="progLabel">Q 1/10</span>
+        <div></div>
+        <div class="combo-display" id="comboDisplay">
+          <span class="combo-flame" id="comboFlame">⚡</span>
+          <span class="combo-label combo-x1" id="comboLabel">×1</span>
+        </div>
+        <span class="q-score-label" id="scoreLabel">0 pts</span>
+      </div>
+
+      <!-- progress bar -->
+      <div class="prog-bar-wrap"><div class="prog-bar-fill" id="progBar" style="width:0%"></div></div>
+
+      <!-- streak -->
+      <div class="streak-row">
+        <span class="streak-label">SÉRIE</span>
+        <div class="streak-dots" id="streakDots"></div>
+        <span class="streak-multiplier" id="streakMulti"></span>
+      </div>
+
+      <!-- timer + points preview -->
+      <div class="timer-section">
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <div class="timer-visual" id="timerVisual">
+            <svg class="timer-svg" viewBox="0 0 52 52">
+              <circle class="timer-track" cx="26" cy="26" r="22"/>
+              <circle class="timer-arc" id="timerArc" cx="26" cy="26" r="22"/>
+            </svg>
+            <div class="timer-num" id="timerNum">20</div>
+          </div>
+          <div>
+            <div style="font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.35em;color:var(--text3)">TEMPS RESTANT</div>
+            <div style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--text2);margin-top:.1rem" id="timerBonus">Répondre vite = plus de points</div>
+          </div>
+        </div>
+        <div class="points-preview">
+          <div class="points-preview-label">POINTS DISPONIBLES</div>
+          <div class="points-preview-val" id="ptsPreview">1000</div>
+          <div class="points-bonus-tag" id="ptsBonusTag">BASE 100 + VITESSE + COMBO</div>
+        </div>
+      </div>
+
+      <!-- question -->
+      <div class="q-body">
+        <div class="q-cat" id="qCat">CATÉGORIE</div>
+        <div class="q-text" id="qText">Chargement…</div>
+        <div class="ans-grid" id="ansGrid"></div>
+        <div class="feedback-box" id="feedbackBox">
+          <div class="fb-verdict" id="fbVerdict"></div>
+          <div class="fb-text" id="fbText"></div>
+          <div class="fb-pts" id="fbPts"></div>
+        </div>
+        <button class="next-btn" id="nextBtn" onclick="nextQ()">QUESTION SUIVANTE →</button>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" onclick="showSec('sec-home')">← QUITTER L'ÉPREUVE</button>
+    </div>
+  </div>
+
+  <!-- ======== RESULTS ======== -->
+  <div class="sec" id="sec-results">
+    <div class="panel">
+      <div class="results-center">
+        <div class="res-title" id="resTitle">—</div>
+        <div class="res-sub" id="resSub">—</div>
+        <div class="res-score-big" id="resBigScore">0</div>
+        <div class="res-score-lbl">POINTS TOTAUX</div>
+        <div><span class="res-rank" id="resRank">—</span></div>
+        <div class="res-stats">
+          <div class="stat-card"><div class="stat-val" id="stCorrect">0</div><div class="stat-lbl">BONNES RÉPONSES</div></div>
+          <div class="stat-card"><div class="stat-val" id="stBest">0</div><div class="stat-lbl">MEILLEURE SÉRIE</div></div>
+          <div class="stat-card"><div class="stat-val" id="stAvg">0s</div><div class="stat-lbl">TEMPS MOYEN</div></div>
+        </div>
+      </div>
+
+      <div class="panel-eyebrow">🏆 TABLE DES HÉROS</div>
+      <table class="lb-table">
+        <thead><tr><th>#</th><th>GUERRIER</th><th>SCORE</th><th>RANG</th></tr></thead>
+        <tbody id="lbBody"></tbody>
+      </table>
+      <div class="nav-row">
+        <button class="nav-btn" onclick="restartQuiz()">⚔ REJOUER</button>
+        <button class="nav-btn" onclick="showSec('sec-home')">CHANGER DE DÉFI</button>
+        <button class="nav-btn" onclick="showSec('sec-lb')">🏆 CLASSEMENT</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin:.75rem 0">
+      <button class="rank-toggle" onclick="toggleRanks()">⚒ GUIDE DES RANGS</button>
+    </div>
+    <div class="rank-guide" id="rankGuide">
+      <div class="rank-row"><span class="r-icon">🌱</span><div><div class="r-name">Thrall</div><div class="r-req">0–199 pts — Serf, ton chemin commence ici.</div></div></div>
+      <div class="rank-row"><span class="r-icon">🗡️</span><div><div class="r-name">Guerrier</div><div class="r-req">200–499 pts — Tu as pris les armes.</div></div></div>
+      <div class="rank-row"><span class="r-icon">🛡️</span><div><div class="r-name">Huscarl</div><div class="r-req">500–799 pts — Garde d'élite.</div></div></div>
+      <div class="rank-row"><span class="r-icon">🔥</span><div><div class="r-name">Berserker</div><div class="r-req">800–1099 pts — La fureur d'Odin coule en toi.</div></div></div>
+      <div class="rank-row"><span class="r-icon">📜</span><div><div class="r-name">Skaald</div><div class="r-req">1100–1399 pts — Tu chantes les exploits des héros.</div></div></div>
+      <div class="rank-row"><span class="r-icon">🦅</span><div><div class="r-name">Valkyrie</div><div class="r-req">1400–1699 pts — Tu choisis les morts dignes du Valhalla.</div></div></div>
+      <div class="rank-row"><span class="r-icon">⚡</span><div><div class="r-name">Einherjar</div><div class="r-req">1700–1999 pts — Guerrier du Valhalla.</div></div></div>
+      <div class="rank-row"><span class="r-icon">🌩️</span><div><div class="r-name">Allfather</div><div class="r-req">2000+ pts — Tu es Odin. La sagesse des âges t'appartient.</div></div></div>
+    </div>
+  </div>
+
+  <!-- ======== LEADERBOARD ======== -->
+  <div class="sec" id="sec-lb">
+    <div class="panel">
+      <div class="panel-eyebrow">🏆 TABLES RUNIQUES</div>
+      <h3 class="panel-h">Hall of Fame du Valhalla</h3>
+      <table class="lb-table">
+        <thead><tr><th>#</th><th>GUERRIER</th><th>SCORE</th><th>RANG</th></tr></thead>
+        <tbody id="fullLb"></tbody>
+      </table>
+      <div class="nav-row"><button class="nav-btn" onclick="showSec('sec-home')">← RETOUR AU QUIZ</button></div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+const TIMER_SECS = 20;
+const BASE_PTS = 100;
+const SPEED_BONUS_MAX = 200;
+const COMBO_MULTIPLIERS = [1,1.25,1.5,2,2.5];
+
+const QUESTIONS = [
+  {q:"Qui est le dieu principal du panthéon nordique, maître de la sagesse et de la guerre ?",cat:"LES ASES",opts:["Thor","Odin","Tyr","Baldr"],a:1,xp:"Odin (Allfather) est le roi des Ases. Il sacrifia un œil pour boire à la source de Mimir et acquérir la sagesse universelle."},
+  {q:"Quel est le nom du marteau de Thor ?",cat:"ARMES & ARTEFACTS",opts:["Gungnir","Gleipnir","Mjölnir","Draupnir"],a:2,xp:"Mjölnir fut forgé par les nains Brokk et Sindri. Sa manche courte est due à une intervention de Loki sous forme de mouche."},
+  {q:"Quelle créature immense entoure Midgard dans les profondeurs de l'océan ?",cat:"CRÉATURES",opts:["Fenrir","Níðhöggr","Jörmungandr","Ratatoskr"],a:2,xp:"Jörmungandr, le Serpent du Monde, est fils de Loki. Thor et lui se tuent mutuellement lors du Ragnarök."},
+  {q:"Combien de royaumes composent l'arbre cosmique Yggdrasil ?",cat:"COSMOLOGIE",opts:["7","9","12","3"],a:1,xp:"Les Neuf Mondes : Asgard, Midgard, Jotunheim, Vanaheim, Niflheim, Muspelheim, Alfheim, Svartalfheim, Helheim."},
+  {q:"Quel dieu nordique est associé à la tromperie et au feu, enfant de géants ?",cat:"LES ASES",opts:["Loki","Surtr","Freyr","Heimdall"],a:0,xp:"Loki, dieu rusé né de géants, vécut parmi les Ases. Il est le père de Fenrir, Jörmungandr et Hel."},
+  {q:"Quel est le nom du champ de bataille final lors du Ragnarök ?",cat:"RAGNARÖK",opts:["Vigríðr","Bifröst","Múspell","Gjöll"],a:0,xp:"Vígríðr est la plaine immense où se déroulera la bataille finale, s'étendant sur 100 lieues dans chaque direction."},
+  {q:"Comment s'appelle le pont arc-en-ciel reliant Asgard à Midgard ?",cat:"COSMOLOGIE",opts:["Helgrind","Bifröst","Gjallarbro","Nidafjoll"],a:1,xp:"Bifröst est gardé par Heimdall aux sens infaillibles. Il se brisera lors du Ragnarök sous le poids des géants."},
+  {q:"Quel écureuil malicieux court le long de Yggdrasil, semant la discorde ?",cat:"CRÉATURES",opts:["Geri","Ratatoskr","Huginn","Veðrfölnir"],a:1,xp:"Ratatoskr transmet des insultes entre l'aigle perché au sommet et le dragon Níðhöggr à la base de l'arbre."},
+  {q:"Quel est le nom de la lance d'Odin, forgée par les nains ?",cat:"ARMES & ARTEFACTS",opts:["Gram","Skofnung","Dáinsleif","Gungnir"],a:3,xp:"Gungnir, la lance d'Odin, ne manque jamais sa cible. Créée par les Fils d'Ivaldi, les mêmes qui forgèrent les cheveux d'or de Sif."},
+  {q:"Quelle déesse est associée à l'amour, la fertilité et la beauté ?",cat:"LES ASES",opts:["Frigg","Skaði","Iðunn","Freyja"],a:3,xp:"Freyja est la plus grande des déesses Vanes. Elle pleure des larmes d'or, son char est tiré par deux chats."},
+  {q:"Qui tue le dieu Baldr en lançant du gui sur lui ?",cat:"MYTHES",opts:["Loki via Höðr","Fenrir","Tyr","Surtr"],a:0,xp:"Loki fabriqua une flèche de gui et guida la main aveugle de Höðr. Baldr était invulnérable à tout… sauf au gui."},
+  {q:"Quel est le nom du loup cosmique, fils de Loki, enchaîné par les dieux ?",cat:"CRÉATURES",opts:["Garm","Skoll","Fenrir","Hati"],a:2,xp:"Fenrir fut enchaîné par Gleipnir forgé d'ingrédients impossibles. Il se libérera au Ragnarök et dévorera Odin."},
+  {q:"Combien de runes compose le Futhark ancien ?",cat:"RUNES",opts:["16","18","24","32"],a:2,xp:"Le Futhark ancien compte 24 runes, de Fehu (ᚠ) à Othala (ᛟ). Le Futhark jeune, à l'époque viking, en compte 16."},
+  {q:"Quelle est la salle des banquets d'Odin où festoient les guerriers tombés ?",cat:"COSMOLOGIE",opts:["Fólkvangr","Gimlé","Valhalla","Noa Vík"],a:2,xp:"Le Valhalla accueille les Einherjar sélectionnés par les Valkyries. Ils se battent chaque jour et festoient chaque soir."},
+  {q:"Quel géant de feu mènera les armées de Muspelheim lors du Ragnarök ?",cat:"RAGNARÖK",opts:["Ymir","Surtr","Thrym","Utgard-Loki"],a:1,xp:"Surtr, le géant de feu primordial, brandira son épée enflammée et brûlera le monde entier à la fin du Ragnarök."},
+  {q:"Quel est le nom du dieu gardien du Bifröst, qui sonnera du Gjallarhorn ?",cat:"LES ASES",opts:["Tyr","Balder","Heimdall","Vidar"],a:2,xp:"Heimdall, le dieu Sentinelle, se tient aux portes d'Asgard. Son Gjallarhorn sonnera pour annoncer le début du Ragnarök."},
+  {q:"Quel animal sacré tire le char du soleil à travers le ciel chaque jour ?",cat:"COSMOLOGIE",opts:["Arvak et Alsvid","Hrimfaxi","Skinfaxi","Svadilfari"],a:0,xp:"Arvak et Alsvid (Vigilant et Rapide) tirent le char de la déesse Sol. Ils fuient le loup Sköll qui tente de les dévorer."},
+  {q:"Comment s'appelle le festin divin qui rend les Ases immortels ?",cat:"LES ASES",opts:["Les pommes d'Iðunn","Le miel de Kvasir","L'hydromel du Valhalla","Le lait de Heiðrún"],a:0,xp:"Les pommes d'Iðunn maintiennent les dieux jeunes et immortels. Lorsque Loki enleva Iðunn, les Ases commencèrent à vieillir."},
+  {q:"Quel est le nom de l'épée magique qui se bat d'elle-même ?",cat:"ARMES & ARTEFACTS",opts:["Tyrfing","Dáinsleif","Hrunting","Nagelring"],a:1,xp:"Dáinsleif (Héritage de Dáinn) doit tuer une fois dégainée. Elle appartint au roi Hogni et ne peut être regainée sans avoir pris une vie."},
+  {q:"Quel est le nom de la vache primordiale qui nourrit Ymir, le premier géant ?",cat:"COSMOLOGIE",opts:["Auðumbla","Heiðrún","Ratatoskr","Gullinbursti"],a:0,xp:"Auðumbla, la grande vache primordiale, nourrit Ymir de son lait et lécha les blocs de glace pour libérer Búri, ancêtre des dieux."},
+];
+
+const LEADERBOARD = [
+  {name:"Björn le Féroce",score:2240,rank:"Allfather"},
+  {name:"Sigrid Skölddóttir",score:1980,rank:"Einherjar"},
+  {name:"Hakon Tempête-de-Fer",score:1750,rank:"Einherjar"},
+  {name:"Ragnheiðr",score:1540,rank:"Valkyrie"},
+  {name:"Thorvald l'Aveugle",score:1390,rank:"Skaald"},
+  {name:"Ulfhéðinn",score:1150,rank:"Berserker"},
+  {name:"Freydís Eiríksdóttir",score:890,rank:"Huscarl"},
+  {name:"Gunnar Hamundarson",score:640,rank:"Guerrier"},
+];
+
+let state = {
+  userName: null,
+  questions: [],
+  current: 0,
+  score: 0,
+  combo: 0,
+  streak: 0,
+  bestStreak: 0,
+  answered: false,
+  timerVal: TIMER_SECS,
+  timerInterval: null,
+  ptsTick: null,
+  currentPts: 0,
+  answeredCount: 0,
+  correctCount: 0,
+  totalTime: 0,
+  questionStartTime: 0,
+};
+
+/* ---- SECTIONS ---- */
+function showSec(id){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);
+  if(el){el.classList.add('active');el.classList.add('anim-in')}
+}
+
+/* ---- TOAST ---- */
+function toast(msg,dur=2600){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+/* ---- LOGIN ---- */
+function fakeLogin(){
+  const ns=['Björn Ironside','Ivar Sans-Os','Leif Eriksson','Sigrid la Fière','Ulfhéðinn','Ragnar Lodbrok','Lagertha la Shieldmaiden'];
+  state.userName=ns[Math.floor(Math.random()*ns.length)];
+  document.getElementById('connBar').classList.add('show');
+  document.getElementById('cName').textContent=state.userName;
+  toast('ᚹᛖᛚᚲᛟᛗᛖ — '+state.userName);
+}
+function disconnect(){
+  state.userName=null;
+  document.getElementById('connBar').classList.remove('show');
+  toast('Tu as quitté le Valhalla.');
+}
+
+/* ---- START ---- */
+function startQuiz(){
+  if(!state.userName) fakeLogin();
+  state.questions=[...QUESTIONS].sort(()=>Math.random()-.5).slice(0,10);
+  state.current=0;state.score=0;state.combo=0;state.streak=0;state.bestStreak=0;
+  state.answeredCount=0;state.correctCount=0;state.totalTime=0;
+  showSec('sec-quiz');
+  loadQ();
+}
+function restartQuiz(){startQuiz()}
+
+/* ---- TIMER ---- */
+const ARC_FULL=138.23;
+function startTimer(){
+  clearInterval(state.timerInterval);clearInterval(state.ptsTick);
+  state.timerVal=TIMER_SECS;
+  state.questionStartTime=Date.now();
+  renderTimer();
+  updatePtsPreview();
+  state.timerInterval=setInterval(()=>{
+    state.timerVal=Math.max(0,state.timerVal-.1);
+    renderTimer();
+    updatePtsPreview();
+    if(state.timerVal<=0){
+      clearInterval(state.timerInterval);
+      if(!state.answered) onTimeout();
+    }
+  },100);
+}
+
+function renderTimer(){
+  const ratio=state.timerVal/TIMER_SECS;
+  const offset=ARC_FULL*(1-ratio);
+  const arc=document.getElementById('timerArc');
+  const num=document.getElementById('timerNum');
+  const vis=document.getElementById('timerVisual');
+  if(!arc)return;
+  arc.style.strokeDashoffset=offset;
+  num.textContent=Math.ceil(state.timerVal);
+  const danger=state.timerVal<=5;
+  vis.classList.toggle('timer-danger',danger);
+  // colour gradient green→gold→red
+  if(ratio>0.5) arc.style.stroke='var(--gold)';
+  else if(ratio>0.25) arc.style.stroke='var(--combo2)';
+  else arc.style.stroke='var(--danger)';
+}
+
+function stopTimer(){
+  clearInterval(state.timerInterval);
+  clearInterval(state.ptsTick);
+}
+
+/* ---- DYNAMIC POINTS ---- */
+function calcPoints(){
+  const ratio=state.timerVal/TIMER_SECS;
+  const speedBonus=Math.round(SPEED_BONUS_MAX*ratio);
+  const comboIdx=Math.min(state.combo,COMBO_MULTIPLIERS.length-1);
+  const multi=COMBO_MULTIPLIERS[comboIdx];
+  const raw=BASE_PTS+speedBonus;
+  return {raw,multi,total:Math.round(raw*multi),speedBonus,comboIdx};
+}
+
+function updatePtsPreview(){
+  const {total,speedBonus,multi}=calcPoints();
+  const el=document.getElementById('ptsPreview');
+  const tag=document.getElementById('ptsBonusTag');
+  if(!el)return;
+  el.textContent=total;
+  el.classList.remove('decaying');
+  void el.offsetWidth;
+  el.classList.add('decaying');
+  // colour by urgency
+  const ratio=state.timerVal/TIMER_SECS;
+  if(ratio>0.6) el.style.color='var(--gold2)';
+  else if(ratio>0.3) el.style.color='var(--combo2)';
+  else el.style.color='var(--danger)';
+  tag.textContent=`BASE ${BASE_PTS} + VITESSE ${speedBonus} × COMBO ${multi}`;
+}
+
+/* ---- COMBO / STREAK ---- */
+function updateComboUI(){
+  const idx=Math.min(state.combo,COMBO_MULTIPLIERS.length-1);
+  const multi=COMBO_MULTIPLIERS[idx];
+  const lbl=document.getElementById('comboLabel');
+  const flame=document.getElementById('comboFlame');
+  if(!lbl)return;
+  lbl.textContent='×'+multi;
+  lbl.className='combo-label '+['combo-x1','combo-x2','combo-x3','combo-x4','combo-x5'][idx];
+  const flames=['⚡','🔥','🔥','💥','☄️'];
+  flame.textContent=flames[idx];
+}
+
+function buildStreakDots(){
+  const dots=document.getElementById('streakDots');
+  if(!dots)return;
+  dots.innerHTML='';
+  const total=5;
+  for(let i=0;i<total;i++){
+    const d=document.createElement('div');
+    d.className='streak-dot'+(i<state.streak?' '+(state.streak>=5?'fire':'active'):'');
+    dots.appendChild(d);
+  }
+  const multi=document.getElementById('streakMulti');
+  if(state.streak>=5){
+    multi.textContent='COMBO FEU ×'+COMBO_MULTIPLIERS[Math.min(state.streak-1,4)];
+    multi.style.color='var(--combo3)';
+  } else if(state.streak>=3){
+    multi.textContent='COMBO ×'+COMBO_MULTIPLIERS[Math.min(state.streak-1,4)];
+    multi.style.color='var(--combo2)';
+  } else {
+    multi.textContent='';
+  }
+}
+
+/* ---- LOAD QUESTION ---- */
+function loadQ(){
+  const q=state.questions[state.current];
+  state.answered=false;
+  document.getElementById('progLabel').textContent=`Q ${state.current+1}/${state.questions.length}`;
+  document.getElementById('scoreLabel').textContent=state.score+' pts';
+  document.getElementById('progBar').style.width=`${(state.current/state.questions.length)*100}%`;
+  document.getElementById('qCat').textContent=q.cat;
+  document.getElementById('qText').textContent=q.q;
+  document.getElementById('feedbackBox').classList.remove('show');
+  document.getElementById('nextBtn').classList.remove('visible');
+  document.getElementById('timeoutOverlay').classList.remove('show');
+  updateComboUI();
+  buildStreakDots();
+
+  const grid=document.getElementById('ansGrid');
+  grid.innerHTML='';
+  const letters=['A','B','C','D'];
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='ans-btn';
+    btn.innerHTML=`<span class="ans-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.onclick=()=>selectAnswer(i,q,btn);
+    grid.appendChild(btn);
+  });
+  startTimer();
+}
+
+/* ---- ANSWER ---- */
+function selectAnswer(idx,q,btn){
+  if(state.answered)return;
+  state.answered=true;
+  stopTimer();
+  const elapsed=(Date.now()-state.questionStartTime)/1000;
+  state.totalTime+=elapsed;
+  state.answeredCount++;
+
+  const btns=document.querySelectorAll('.ans-btn');
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.a) b.classList.add('correct');
+    else if(i===idx&&idx!==q.a) b.classList.add('incorrect');
+    else if(i!==idx&&i!==q.a) b.classList.add('revealed');
+  });
+
+  const correct=idx===q.a;
+  const {total,speedBonus,multi}=calcPoints();
+
+  if(correct){
+    state.correctCount++;
+    state.combo=Math.min(state.combo+1,4);
+    state.streak++;
+    if(state.streak>state.bestStreak) state.bestStreak=state.streak;
+    state.score+=total;
+    spawnPointsPopup(btn,'+'+total,false);
+    document.getElementById('fbVerdict').textContent='⚔ BONNE RÉPONSE — VALHALLA APPROUVE';
+    document.getElementById('fbVerdict').className='fb-verdict good';
+    document.getElementById('fbPts').textContent=`+${BASE_PTS} base + ${speedBonus} vitesse × ${multi} combo = +${total} pts`;
+    document.getElementById('fbPts').className='fb-pts earned';
+  } else {
+    state.combo=0;
+    state.streak=0;
+    spawnPointsPopup(btn,'✕ +0',true);
+    document.getElementById('fbVerdict').textContent='🛡 RÉPONSE INCORRECTE — APPRENDS, GUERRIER';
+    document.getElementById('fbVerdict').className='fb-verdict bad';
+    document.getElementById('fbPts').textContent='Aucun point — la vitesse ne sert à rien sans la sagesse';
+    document.getElementById('fbPts').className='fb-pts lost';
+  }
+  document.getElementById('fbText').textContent=q.xp;
+  document.getElementById('feedbackBox').classList.add('show');
+  document.getElementById('nextBtn').classList.add('visible');
+  document.getElementById('scoreLabel').textContent=state.score+' pts';
+  updateComboUI();
+  buildStreakDots();
+}
+
+/* ---- TIMEOUT ---- */
+function onTimeout(){
+  if(state.answered)return;
+  state.answered=true;
+  stopTimer();
+  state.combo=0;state.streak=0;
+  state.answeredCount++;
+  const q=state.questions[state.current];
+  const btns=document.querySelectorAll('.ans-btn');
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.a) b.classList.add('correct');
+  });
+  document.getElementById('timeoutOverlay').classList.add('show');
+  setTimeout(()=>{
+    document.getElementById('timeoutOverlay').classList.remove('show');
+    document.getElementById('fbVerdict').textContent='⌛ TEMPS ÉCOULÉ — 0 POINT';
+    document.getElementById('fbVerdict').className='fb-verdict bad';
+    document.getElementById('fbText').textContent=q.xp;
+    document.getElementById('fbPts').textContent='Les dieux n\'accordent aucun point aux indécis';
+    document.getElementById('fbPts').className='fb-pts lost';
+    document.getElementById('feedbackBox').classList.add('show');
+    document.getElementById('nextBtn').classList.add('visible');
+    updateComboUI();buildStreakDots();
+  },1200);
+}
+
+/* ---- NEXT ---- */
+function nextQ(){
+  state.current++;
+  if(state.current>=state.questions.length) showResults();
+  else loadQ();
+}
+
+/* ---- FLOATING POINTS POPUP ---- */
+function spawnPointsPopup(refEl,text,neg){
+  const rect=refEl?refEl.getBoundingClientRect():{top:200,left:200,width:100};
+  const popup=document.createElement('div');
+  popup.className='pts-popup'+(neg?' negative':'');
+  popup.textContent=text;
+  popup.style.left=(rect.left+rect.width/2-30)+'px';
+  popup.style.top=(rect.top+window.scrollY-10)+'px';
+  document.body.appendChild(popup);
+  setTimeout(()=>popup.remove(),1300);
+}
+
+/* ---- RESULTS ---- */
+function getRank(s){
+  if(s>=2000) return{name:'Allfather ⚡',icon:'🌩️'};
+  if(s>=1700) return{name:'Einherjar',icon:'⚡'};
+  if(s>=1400) return{name:'Valkyrie',icon:'🦅'};
+  if(s>=1100) return{name:'Skaald',icon:'📜'};
+  if(s>=800) return{name:'Berserker',icon:'🔥'};
+  if(s>=500) return{name:'Huscarl',icon:'🛡️'};
+  if(s>=200) return{name:'Guerrier',icon:'🗡️'};
+  return{name:'Thrall',icon:'🌱'};
+}
+
+function showResults(){
+  stopTimer();
+  const rank=getRank(state.score);
+  const t=[
+    ['Les dieux rient de toi…','Mais même le thrall peut apprendre.'],
+    ['Un début de chemin.','Continue de te battre, jeune guerrier.'],
+    ['Les Ases ont remarqué ton nom.','Tu progresses à chaque épreuve.'],
+    ['Tu mérites ton mead.','Le festin du Valhalla t\'accueille.'],
+    ['Skål, Berserker !','Le Valhalla retentit de tes exploits.'],
+    ['Les Valkyries te guettent.','Ta destinée est grande.'],
+    ['Einherjar ! Ton nom sera chanté !','Odin hoche la tête en ta faveur.'],
+    ['ALLFATHER ! Tu es la sagesse incarnée.','Les runes s\'inclinent devant toi.'],
+  ];
+  const tier=Math.min(7,Math.floor(state.score/250));
+  document.getElementById('resTitle').textContent=t[tier][0];
+  document.getElementById('resSub').textContent=t[tier][1];
+  document.getElementById('resBigScore').textContent=state.score;
+  document.getElementById('resRank').textContent=rank.icon+' '+rank.name;
+  document.getElementById('stCorrect').textContent=state.correctCount+'/'+state.questions.length;
+  document.getElementById('stBest').textContent=state.bestStreak;
+  const avg=state.answeredCount>0?(state.totalTime/state.answeredCount).toFixed(1)+'s':'—';
+  document.getElementById('stAvg').textContent=avg;
+
+  // Insert player into leaderboard
+  const lb=[...LEADERBOARD];
+  if(state.userName){
+    lb.push({name:state.userName,score:state.score,rank:rank.name,me:true});
+  }
+  lb.sort((a,b)=>b.score-a.score);
+  const top5=lb.slice(0,8);
+  const lbEl=document.getElementById('lbBody');
+  lbEl.innerHTML='';
+  top5.forEach((p,i)=>{
+    const tr=document.createElement('tr');
+    if(p.me) tr.className='me';
+    tr.innerHTML=`<td>${i+1}</td><td>${p.name}${p.me?' ◄':''}</td><td>${p.score}</td><td><span class="rank-chip">${p.rank}</span></td>`;
+    lbEl.appendChild(tr);
+  });
+
+  // Full lb
+  const fullEl=document.getElementById('fullLb');
+  if(fullEl){
+    fullEl.innerHTML='';
+    lb.forEach((p,i)=>{
+      const tr=document.createElement('tr');
+      if(p.me) tr.className='me';
+      tr.innerHTML=`<td>${i+1}</td><td>${p.name}${p.me?' ◄':''}</td><td>${p.score}</td><td><span class="rank-chip">${p.rank}</span></td>`;
+      fullEl.appendChild(tr);
+    });
+  }
+  showSec('sec-results');
+}
+
+function toggleRanks(){
+  document.getElementById('rankGuide').classList.toggle('open');
+}
+
+/* ---- RUNE BG ---- */
+(function(){
+  const r='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ⚔⚒🛡';
+  const bg=document.getElementById('runeBg');
+  for(let i=0;i<16;i++){
+    const s=document.createElement('span');
+    s.className='rune-char';
+    s.textContent=r[Math.floor(Math.random()*r.length)];
+    s.style.left=Math.random()*100+'vw';
+    s.style.animationDelay=(Math.random()*20)+'s';
+    s.style.animationDuration=(14+Math.random()*18)+'s';
+    s.style.fontSize=(1+Math.random()*1.8)+'rem';
+    bg.appendChild(s);
+  }
+})();
+</script>
