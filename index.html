@@ -18,7 +18,31 @@ html,body{width:100%;background:var(--bg);color:var(--text);font-family:'Crimson
 .rune-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
 .rune-char{position:absolute;font-family:'Cinzel',serif;color:rgba(201,146,42,0.04);font-size:2rem;font-weight:900;animation:rfloat 20s infinite linear;user-select:none}
 @keyframes rfloat{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}
+/* ---- ANNONCE DISCORD (WEBHOOK) ---- */
+function annoncerScoreDiscord(nom, score, rang) {
+  // Remplace ceci par l'URL de ton Webhook Discord
+  const webhookUrl = https://discord.com/api/webhooks/1508601850109235392/8YugABIN1ljNGCSpj2e0TR1WVMJ558H0kFdYtshEW_RircOoOb02nwz0W8Tz5lq3s7kU;
 
+  // On prépare un beau message (Embed) aux couleurs du Valhalla
+  const message = {
+    embeds: [{
+      title: "🏆 Nouveau Héros au Valhalla !",
+      description: `**${nom}** vient de terminer l'épreuve de Mjölnir !`,
+      color: 13209898, // Couleur Or (équivalent de ton --gold #c9922a)
+      fields: [
+        { name: "Score Total", value: `${score} pts`, inline: true },
+        { name: "Rang Obtenu", value: rang, inline: true }
+      ]
+    }]
+  };
+
+  // On envoie le corbeau (requête) vers Discord
+  fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(message)
+  }).catch(erreur => console.error("Le corbeau s'est perdu :", erreur));
+}
 /* ===== LAYOUT ===== */
 .page{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 1.25rem 4rem}
 
@@ -793,10 +817,14 @@ function showResults(){
   const avg=state.answeredCount>0?(state.totalTime/state.answeredCount).toFixed(1)+'s':'—';
   document.getElementById('stAvg').textContent=avg;
 
-  // Insert player into leaderboard
+ // Insert player into leaderboard
   const lb=[...LEADERBOARD];
   if(state.userName){
     lb.push({name:state.userName,score:state.score,rank:rank.name,me:true});
+    
+    // NOUVEAU : On envoie le corbeau annoncer le score sur Discord !
+    annoncerScoreDiscord(state.userName, state.score, rank.icon + ' ' + rank.name);
+  }
   }
   lb.sort((a,b)=>b.score-a.score);
   const top5=lb.slice(0,8);
