@@ -477,14 +477,45 @@ function toast(msg,dur=2600){
   setTimeout(()=>t.classList.remove('show'),dur);
 }
 
-/* ---- LOGIN ---- */
+/* ---- LOGIN DISCORD ---- */
 function fakeLogin(){
-  const ns=['Björn Ironside','Ivar Sans-Os','Leif Eriksson','Sigrid la Fière','Ulfhéðinn','Ragnar Lodbrok','Lagertha la Shieldmaiden'];
-  state.userName=ns[Math.floor(Math.random()*ns.length)];
-  document.getElementById('connBar').classList.add('show');
-  document.getElementById('cName').textContent=state.userName;
-  toast('ᚹᛖᛚᚲᛟᛗᛖ — '+state.userName);
+  // Ton lien Discord corrigé pour fonctionner sans serveur backend (token au lieu de code)
+  const lienDiscord = "https://discord.com/oauth2/authorize?client_id=1508604264677769326&response_type=token&redirect_uri=https%3A%2F%2Ftannquizz.vercel.app&scope=identify";
+  
+  // Téléporte le joueur vers Discord
+  window.location.href = lienDiscord;
 }
+
+// Fonction qui s'active au retour du joueur sur le site
+window.addEventListener('load', () => {
+  // On fouille l'URL pour trouver le code secret laissé par Discord
+  const fragment = new URLSearchParams(window.location.hash.slice(1));
+  const accessToken = fragment.get('access_token');
+  const tokenType = fragment.get('token_type');
+
+  if (accessToken) {
+    // 1. On nettoie l'URL pour cacher le code
+    window.history.replaceState(null, null, window.location.pathname);
+
+    // 2. On interroge les dieux (serveurs Discord) avec ce code
+    fetch('https://discord.com/api/users/@me', {
+      headers: {
+        authorization: `${tokenType} ${accessToken}`,
+      },
+    })
+    .then(result => result.json())
+    .then(reponseDiscord => {
+      // 3. On enregistre le vrai pseudo du joueur
+      state.userName = reponseDiscord.global_name || reponseDiscord.username;
+      
+      // 4. On affiche l'interface de connexion
+      document.getElementById('connBar').classList.add('show');
+      document.getElementById('cName').textContent = state.userName;
+      toast('ᚹᛖᛚᚲᛟᛗᛖ — ' + state.userName);
+    })
+    .catch(console.error);
+  }
+});
 function disconnect(){
   state.userName=null;
   document.getElementById('connBar').classList.remove('show');
