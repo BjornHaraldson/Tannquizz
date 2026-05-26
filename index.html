@@ -19,29 +19,31 @@ html,body{width:100%;background:var(--bg);color:var(--text);font-family:'Crimson
 .rune-char{position:absolute;font-family:'Cinzel',serif;color:rgba(201,146,42,0.04);font-size:2rem;font-weight:900;animation:rfloat 20s infinite linear;user-select:none}
 @keyframes rfloat{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}
 /* ---- ANNONCE DISCORD (WEBHOOK) ---- */
-function annoncerScoreDiscord(nom, score, rang) {
-  // Remplace ceci par l'URL de ton Webhook Discord
+function annoncerScoreDiscord(nom, score, rang, top5Texte) {
+  // ⚠️ N'OUBLIE PAS DE REMETTRE TON VRAI LIEN WEBHOOK ICI ⚠️
   const webhookUrl = "https://discord.com/api/webhooks/1508601850109235392/8YugABIN1ljNGCSpj2e0TR1WVMJ558H0kFdYtshEW_RircOoOb02nwz0W8Tz5lq3s7kU";
+  
+  if(!webhookUrl || webhookUrl === "TON_URL_DE_WEBHOOK_ICI") return; 
 
-  // On prépare un beau message (Embed) aux couleurs du Valhalla
   const message = {
     embeds: [{
-      title: "🏆 Nouveau Héros au Valhalla !",
-      description: `**${nom}** vient de terminer l'épreuve de Mjölnir !`,
-      color: 13209898, // Couleur Or (équivalent de ton --gold #c9922a)
+      title: "👑 Nouveau résultat - Mjölnir Quiz",
+      color: 13209898, // Couleur or
       fields: [
-        { name: "Score Total", value: `${score} pts`, inline: true },
-        { name: "Rang Obtenu", value: rang, inline: true }
-      ]
+        { name: "👤 Joueur", value: `**${nom}**`, inline: true },
+        { name: "🏆 Score", value: `${score} pts`, inline: true },
+        { name: "⚔️ Rang", value: rang, inline: true },
+        { name: "📊 Top 5", value: top5Texte, inline: false }
+      ],
+      footer: { text: "Mjölnir Quiz - Le Valhalla" }
     }]
   };
 
-  // On envoie le corbeau (requête) vers Discord
   fetch(webhookUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(message)
-  }).catch(erreur => console.error("Le corbeau s'est perdu :", erreur));
+  }).catch(erreur => console.error("Erreur Webhook :", erreur));
 }
 /* ===== LAYOUT ===== */
 .page{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 1.25rem 4rem}
@@ -834,10 +836,24 @@ function showResults(){
   const lb=[...LEADERBOARD];
   if(state.userName){
     lb.push({name:state.userName,score:state.score,rank:rank.name,me:true});
-    annoncerScoreDiscord(state.userName, state.score, rank.icon + ' ' + rank.name);
   }
   
+  // 1. On trie le classement pour avoir les meilleurs en premier
   lb.sort((a,b)=>b.score-a.score);
+  
+  // 2. On génère le texte du Top 5 pour Discord
+  let top5Texte = "";
+  const top5Discord = lb.slice(0, 5);
+  top5Discord.forEach((p, i) => {
+    top5Texte += `${i + 1}. ${p.name} — ${p.score} pts\n`;
+  });
+
+  // 3. On envoie enfin le message complet sur Discord
+  if(state.userName){
+    annoncerScoreDiscord(state.userName, state.score, rank.icon + ' ' + rank.name, top5Texte);
+  }
+  
+  // Affichage du classement sur le site
   const top5=lb.slice(0,8);
   const lbEl=document.getElementById('lbBody');
   lbEl.innerHTML='';
