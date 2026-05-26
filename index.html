@@ -503,36 +503,23 @@ function toast(msg,dur=2600){
 
 /* ---- LOGIN DISCORD ---- */
 function fakeLogin(){
-  // Ton lien Discord corrigé pour fonctionner sans serveur backend (token au lieu de code)
   const lienDiscord = "https://discord.com/oauth2/authorize?client_id=1508604264677769326&response_type=token&redirect_uri=https%3A%2F%2Ftannquizz.vercel.app&scope=identify";
-  
-  // Téléporte le joueur vers Discord
   window.location.href = lienDiscord;
 }
 
-// Fonction qui s'active au retour du joueur sur le site
 window.addEventListener('load', () => {
-  // On fouille l'URL pour trouver le code secret laissé par Discord
   const fragment = new URLSearchParams(window.location.hash.slice(1));
   const accessToken = fragment.get('access_token');
   const tokenType = fragment.get('token_type');
 
   if (accessToken) {
-    // 1. On nettoie l'URL pour cacher le code
     window.history.replaceState(null, null, window.location.pathname);
-
-    // 2. On interroge les dieux (serveurs Discord) avec ce code
     fetch('https://discord.com/api/users/@me', {
-      headers: {
-        authorization: `${tokenType} ${accessToken}`,
-      },
+      headers: { authorization: `${tokenType} ${accessToken}` },
     })
     .then(result => result.json())
     .then(reponseDiscord => {
-      // 3. On enregistre le vrai pseudo du joueur
       state.userName = reponseDiscord.global_name || reponseDiscord.username;
-      
-      // 4. On affiche l'interface de connexion
       document.getElementById('connBar').classList.add('show');
       document.getElementById('cName').textContent = state.userName;
       toast('ᚹᛖᛚᚲᛟᛗᛖ — ' + state.userName);
@@ -540,6 +527,7 @@ window.addEventListener('load', () => {
     .catch(console.error);
   }
 });
+
 function disconnect(){
   state.userName=null;
   document.getElementById('connBar').classList.remove('show');
@@ -549,11 +537,13 @@ function disconnect(){
 /* ---- START ---- */
 function startQuiz(){
   if(!state.userName) fakeLogin();
-  state.questions=[...QUESTIONS].sort(()=>Math.random()-.5).slice(0,10);
-  state.current=0;state.score=0;state.combo=0;state.streak=0;state.bestStreak=0;
-  state.answeredCount=0;state.correctCount=0;state.totalTime=0;
-  showSec('sec-quiz');
-  loadQ();
+  else {
+    state.questions=[...QUESTIONS].sort(()=>Math.random()-.5).slice(0,10);
+    state.current=0;state.score=0;state.combo=0;state.streak=0;state.bestStreak=0;
+    state.answeredCount=0;state.correctCount=0;state.totalTime=0;
+    showSec('sec-quiz');
+    loadQ();
+  }
 }
 function restartQuiz(){startQuiz()}
 
@@ -587,7 +577,6 @@ function renderTimer(){
   num.textContent=Math.ceil(state.timerVal);
   const danger=state.timerVal<=5;
   vis.classList.toggle('timer-danger',danger);
-  // colour gradient green→gold→red
   if(ratio>0.5) arc.style.stroke='var(--gold)';
   else if(ratio>0.25) arc.style.stroke='var(--combo2)';
   else arc.style.stroke='var(--danger)';
@@ -617,7 +606,6 @@ function updatePtsPreview(){
   el.classList.remove('decaying');
   void el.offsetWidth;
   el.classList.add('decaying');
-  // colour by urgency
   const ratio=state.timerVal/TIMER_SECS;
   if(ratio>0.6) el.style.color='var(--gold2)';
   else if(ratio>0.3) el.style.color='var(--combo2)';
@@ -782,6 +770,32 @@ function spawnPointsPopup(refEl,text,neg){
   setTimeout(()=>popup.remove(),1300);
 }
 
+/* ---- ANNONCE DISCORD (WEBHOOK) ---- */
+function annoncerScoreDiscord(nom, score, rang) {
+  const webhookUrl = "TON_URL_DE_WEBHOOK_ICI";
+  
+  // Sécurité pour éviter un crash si le lien n'est pas rempli
+  if(!webhookUrl || webhookUrl === "TON_URL_DE_WEBHOOK_ICI") return; 
+
+  const message = {
+    embeds: [{
+      title: "🏆 Nouveau Héros au Valhalla !",
+      description: `**${nom}** vient de terminer l'épreuve de Mjölnir !`,
+      color: 13209898,
+      fields: [
+        { name: "Score Total", value: `${score} pts`, inline: true },
+        { name: "Rang Obtenu", value: rang, inline: true }
+      ]
+    }]
+  };
+
+  fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(message)
+  }).catch(erreur => console.error("Erreur Webhook :", erreur));
+}
+
 /* ---- RESULTS ---- */
 function getRank(s){
   if(s>=2000) return{name:'Allfather ⚡',icon:'🌩️'};
@@ -817,15 +831,12 @@ function showResults(){
   const avg=state.answeredCount>0?(state.totalTime/state.answeredCount).toFixed(1)+'s':'—';
   document.getElementById('stAvg').textContent=avg;
 
- // Insert player into leaderboard
   const lb=[...LEADERBOARD];
   if(state.userName){
     lb.push({name:state.userName,score:state.score,rank:rank.name,me:true});
-    
-    // NOUVEAU : On envoie le corbeau annoncer le score sur Discord !
     annoncerScoreDiscord(state.userName, state.score, rank.icon + ' ' + rank.name);
   }
-  }
+  
   lb.sort((a,b)=>b.score-a.score);
   const top5=lb.slice(0,8);
   const lbEl=document.getElementById('lbBody');
@@ -837,7 +848,6 @@ function showResults(){
     lbEl.appendChild(tr);
   });
 
-  // Full lb
   const fullEl=document.getElementById('fullLb');
   if(fullEl){
     fullEl.innerHTML='';
